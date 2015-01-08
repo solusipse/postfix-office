@@ -1,0 +1,76 @@
+# ########################################################################### #
+# This file is part of postfix-office suite.
+# For more informations visit:
+#   https://github.com/solusipse/postfix-office
+# ########################################################################### #
+
+# -----------------------------------------------------------------------------
+# This is postfix configuration file that should be edited and placed in
+# /etc/postfix/main.cf
+# -----------------------------------------------------------------------------
+
+
+# Some basic settings
+
+# This should be empty because of security reasons
+relay_domains =
+
+# Virtual mail settings
+virtual_alias_maps = proxy:pgsql:/etc/postfix/virtual_alias_maps.cf
+virtual_mailbox_domains = proxy:pgsql:/etc/postfix/virtual_mailbox_domains.cf
+virtual_mailbox_maps = proxy:pgsql:/etc/postfix/virtual_mailbox_maps.cf
+
+# Directory for mail data
+virtual_mailbox_base = /home/vmail
+
+# Misc settings that don't usually need any changes
+virtual_mailbox_limit = 512000000
+virtual_minimum_uid = 5000
+virtual_uid_maps = static:5000
+virtual_gid_maps = static:5000
+local_transport = virtual
+local_recipient_maps = 
+transport_maps = hash:/etc/postfix/transport
+
+# Security related settings
+smtpd_sasl_auth_enable = yes
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination
+smtpd_sasl_security_options = noanonymous
+smtpd_sasl_tls_security_options = 
+smtpd_use_tls = yes
+smtpd_tls_auth_only = yes
+
+# Certificates paths and other security settings
+smtpd_tls_cert_file = /etc/ssl/private/server.crt
+smtpd_tls_key_file = /etc/ssl/private/server.key
+smtpd_sasl_local_domain = 
+broken_sasl_auth_clients = yes
+smtpd_tls_loglevel = 1
+html_directory = /usr/share/doc/postfix/html
+queue_directory = /var/spool/postfix
+mydestination = localhost
+readme_directory = no
+sample_directory = /etc/postfix
+sendmail_path = /usr/sbin/sendmail
+setgid_group = postdrop
+command_directory = /usr/sbin
+manpage_directory = /usr/local/man
+daemon_directory = /usr/libexec/postfix
+newaliases_path = /usr/bin/newaliases
+mailq_path = /usr/bin/mailq
+mail_owner = postfix
+data_directory = /var/lib/postfix
+
+# For ipv6 support, edit line below
+inet_protocols = ipv4
+
+# Header settings, file below should contain rules hiding sender's ip
+header_checks = regexp:/etc/postfix/header_checks
+message_size_limit = 52428800
+
+# Dspam related settings
+virtual_transport = virtualprocmail:dummy
+virtualprocmail_destination_recipient_limit = 1
+dspam_destination_recipient_limit = 1
