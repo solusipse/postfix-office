@@ -34,14 +34,19 @@ package Strings;
 
 use strict;
 use warnings;
+use Term::ANSIColor;
 
 
 my @messages = (
-    "Welcome to postfix-office, tool that provides support for configuring own e-mail server.",
-    "This script is able to install everything what is needed, but there's a chance you'll want to set some options on your own.",
-    "Choose components to be installed and configured.",
-    "Please, run as root",
-    "Can't detect your system",
+    "Welcome to " . color('magenta') . "postfix-office" . color('reset') . ", tool that provides support for configuring your own e-mail server.",
+    "This script is able to install everything what is needed, some components are optional.",
+    "Components that will be installed and configured first are: PostgreSQL (if not available), Postfix, Dovecot and dspam. These are mandatory in current version.",
+    color('red') . "Please, run as root" . color('reset'),
+    color('red') . "Your system is not supported" . color('reset'),
+    "Detected your distribution as " . color("yellow") . "Centos" . color("reset") . ".",
+    "Detected your distribution as " . color("yellow") . "Debian" . color("reset") . ".",
+    "Postfix-office is going to update your system now. Press ENTER to continue.",
+    "On Centos default version of Postfix should be removed now. It must be installed from Centos Plus repository. Follow directions from your package manager. Press ENTER to start.",
 );
 
 sub get_variable {

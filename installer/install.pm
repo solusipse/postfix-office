@@ -39,7 +39,7 @@ package Install;
 use strict;
 use warnings;
 
-require "installer/strings.pm";
+use Tie::File;
 
 sub detect_distribution {
     if (-e "/etc/redhat-release") {
@@ -49,25 +49,75 @@ sub detect_distribution {
         return 1;
     }
 
-    die(Strings::get_variable(4));
+    Common::error(4);
+}
+
+sub detect_info {
+    if (-e "/etc/redhat-release") {
+        Common::display(5);
+    }
+    if (-e "/etc/debian_version") {
+        Common::display(6);
+    }
 }
 
 sub update_system {
     if (detect_distribution == 0) {
-        return "yum update";
+        centos_postfix_installer();
+        system("yum update");
     }
     if (detect_distribution == 1) {
-        return "apt get update && apt get upgrade"
+        system("apt get update && apt get upgrade");
     }
 }
 
 sub package_manager {
     if (detect_distribution == 0) {
-        return "yum instal";
+        return "yum install ";
     }
     if (detect_distribution == 1) {
-        return "apt get install"
+        return "apt get install "
     }
+}
+
+sub centos_postfix_installer {
+    # Postfix from Base repository is compiled without PostgreSQL support.
+    # This script forces yum to install Postfix from Centos Plus repository.
+
+    Common::display(8);
+    <STDIN>;
+
+    system("yum remove postfix");
+
+    tie my @array, 'Tie::File', "/etc/yum.repos.d/CentOS-Base.repo" or die "Can't open repository config file";
+
+    for (my $i = 0;  $i < @array; $i++) {
+        # TODO: improve that method to detect if there's includepkgs line already
+        if ($array[$i] eq "[centosplus]") {
+            if ($array[$i+1] ne "includepkgs=postfix*"){
+                splice @array, $i+1, 0, 'includepkgs=postfix*';
+            }
+        }
+        if ($array[$i] eq "[base]") {
+            if ($array[$i+1] ne "exclude=postfix*"){
+                splice @array, $i+1, 0, 'exclude=postfix*';
+            }
+        }
+        if ($array[$i] eq "[updates]") {
+            if ($array[$i+1] ne "exclude=postfix*"){
+                splice @array, $i+1, 0, 'exclude=postfix*';
+            }
+        }
+        if ($array[$i] eq "enabled=0") {
+            # THIS HAS TO BE IMPROVED
+            $array[$i] = "enabled=1";
+        }
+    }
+
+    untie @array;
+
+    system(package_manager() . "postfix");
+
 }
 
 1;

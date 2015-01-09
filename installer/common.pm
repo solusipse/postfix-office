@@ -38,6 +38,8 @@ package Common;
 
 use strict;
 use warnings;
+use Term::ReadKey;
+use Text::Wrap;
 
 require "installer/strings.pm";
 
@@ -93,12 +95,22 @@ sub yn_question {
     }
 }
 
+sub get_screen_width {
+    my ($wchar, $hchar, $wpixels, $hpixels) = GetTerminalSize();
+    return $wchar;
+}
+
 sub display {
-    print Strings::get_variable($_[0]) . "\n";
+    $Text::Wrap::columns = get_screen_width();
+    print wrap('', '', Strings::get_variable($_[0]) . "\n");
+}
+
+sub print_spacer {
+    print "-" x get_screen_width();
 }
 
 sub error {
-    die $_[0] . ', stopped';
+    die Strings::get_variable($_[0]);
 }
 
 sub warning {
